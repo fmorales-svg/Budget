@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi Presupuesto</title>
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --panel: #ffffff;
+        --primary: #2f6fed;
+        --primary-dark: #1f52ba;
+        --success: #1f9d61;
+        --danger: #db3f5c;
+        --text: #1b2430;
+        --muted: #657284;
+        --border: #dfe7f3;
+        --shadow: 0 12px 30px rgba(31, 82, 186, 0.12);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(180deg, #edf3ff 0%, var(--bg) 100%);
+        color: var(--text);
+      }
+
+      .app {
+        max-width: 980px;
+        margin: 32px auto;
+        padding: 24px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 24px 28px 18px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(1.8rem, 2vw, 2.5rem);
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: none;
+        border-radius: 10px;
+        padding: 11px 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.15s ease, opacity 0.2s ease;
+      }
+
+      button:hover { transform: translateY(-1px); }
+      button:active { transform: translateY(0); }
+
+      .primary {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .primary:hover { background: var(--primary-dark); }
+
+      .secondary {
+        background: #eef4ff;
+        color: var(--primary-dark);
+      }
+
+      .danger {
+        background: #ffeaf0;
+        color: var(--danger);
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 24px;
+        padding: 0 28px 28px;
+      }
+
+      .card {
+        background: #f9fbff;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+      }
+
+      form {
+        display: grid;
+        gap: 14px;
+      }
+
+      .field-row {
+        display: grid;
+        grid-template-columns: 1.2fr 0.9fr 0.9fr;
+        gap: 12px;
+      }
+
+      label {
+        display: grid;
+        gap: 7px;
+        font-size: 0.92rem;
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      input, select {
+        width: 100%;
+        padding: 11px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--text);
+        font-size: 1rem;
+      }
+
+      .totals {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .total-box {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 14px;
+      }
+
+      .total-box small {
+        display: block;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      .total-box strong {
+        font-size: 1.5rem;
+      }
+
+      .income { color: var(--success); }
+      .expense { color: var(--danger); }
+      .balance { color: var(--primary); }
+
+      .share-box {
+        margin-top: 18px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .share-box input {
+        background: #fff;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 18px 0 0;
+        display: grid;
+        gap: 10px;
+      }
+
+      li {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 10px;
+        align-items: center;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 14px;
+      }
+
+      .entry-main {
+        display: grid;
+        gap: 3px;
+      }
+
+      .entry-main strong {
+        font-size: 1rem;
+      }
+
+      .entry-main span {
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .badge {
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+      }
+
+      .badge.income {
+        background: rgba(31, 157, 97, 0.12);
+        color: var(--success);
+      }
+
+      .badge.expense {
+        background: rgba(219, 63, 92, 0.12);
+        color: var(--danger);
+      }
+
+      .amount {
+        font-weight: 700;
+      }
+
+      .delete-btn {
+        background: transparent;
+        color: var(--danger);
+        border: none;
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: 4px 8px;
+      }
+
+      .empty {
+        text-align: center;
+        color: var(--muted);
+        padding: 24px 12px;
+        background: #fff;
+        border: 1px dashed var(--border);
+        border-radius: 12px;
+      }
+
+      @media (max-width: 760px) {
+        .content {
+          grid-template-columns: 1fr;
+        }
+
+        .field-row,
+        .totals {
+          grid-template-columns: 1fr;
+        }
+
+        .topbar {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="panel">
+        <div class="topbar">
+          <h1>Mi Presupuesto</h1>
+          <div class="actions">
+            <button id="copyLinkBtn" class="primary" type="button">Copiar enlace</button>
+            <button id="clearBtn" class="danger" type="button">Borrar todo</button>
+          </div>
+        </div>
+
+        <div class="content">
+          <section class="card">
+            <form id="entryForm">
+              <div class="field-row">
+                <label>
+                  Concepto
+                  <input id="description" type="text" placeholder="Ej. Sueldo, comida, alquiler" required />
+                </label>
+                <label>
+                  Tipo
+                  <select id="type">
+                    <option value="income">Ingreso</option>
+                    <option value="expense">Gasto</option>
+                  </select>
+                </label>
+                <label>
+                  Monto
+                  <input id="amount" type="number" min="0" step="0.01" placeholder="0.00" required />
+                </label>
+              </div>
+
+              <button class="primary" type="submit">Guardar registro</button>
+            </form>
+          </section>
+
+          <aside class="card">
+            <div class="totals">
+              <div class="total-box">
+                <small>Ingresos</small>
+                <strong id="incomeTotal" class="income">$0.00</strong>
+              </div>
+              <div class="total-box">
+                <small>Gastos</small>
+                <strong id="expenseTotal" class="expense">$0.00</strong>
+              </div>
+              <div class="total-box">
+                <small>Saldo</small>
+                <strong id="balanceTotal" class="balance">$0.00</strong>
+              </div>
+            </div>
+
+            <div class="share-box">
+              <label for="shareLink">Enlace con tus datos</label>
+              <input id="shareLink" type="text" readonly />
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 24px; padding: 18px 20px;">
+        <h2 style="margin: 0 0 14px;">Registros</h2>
+        <ul id="entriesList"></ul>
+      </div>
+    </div>
+
+    <script>
+      const STORAGE_KEY = 'budgetAppData';
+      const form = document.getElementById('entryForm');
+      const descriptionInput = document.getElementById('description');
+      const typeInput = document.getElementById('type');
+      const amountInput = document.getElementById('amount');
+      const entriesList = document.getElementById('entriesList');
+      const incomeTotal = document.getElementById('incomeTotal');
+      const expenseTotal = document.getElementById('expenseTotal');
+      const balanceTotal = document.getElementById('balanceTotal');
+      const shareLink = document.getElementById('shareLink');
+      const copyLinkBtn = document.getElementById('copyLinkBtn');
+      const clearBtn = document.getElementById('clearBtn');
+
+      const state = {
+        entries: []
+      };
+
+      function formatCurrency(value) {
+        return new Intl.NumberFormat('es-AR', {
+          style: 'currency',
+          currency: 'ARS'
+        }).format(value || 0);
+      }
+
+      function encodeData(data) {
+        return btoa(
+          encodeURIComponent(JSON.stringify(data)).replace(/%([0-9A-F]{2})/g, (_, p1) =>
+            String.fromCharCode(parseInt(p1, 16))
+          )
+        );
+      }
+
+      function decodeData(encoded) {
+        const text = decodeURIComponent(
+          atob(encoded)
+            .split('')
+            .map((char) => `%${('00' + char.charCodeAt(0).toString(16)).slice(-2)}`)
+            .join('')
+        );
+        return JSON.parse(text);
+      }
+
+      function loadState() {
+        const hashData = window.location.hash.startsWith('#data=')
+          ? window.location.hash.replace('#data=', '')
+          : '';
+
+        if (hashData) {
+          try {
+            const data = decodeData(hashData);
+            if (Array.isArray(data.entries)) {
+              state.entries = data.entries;
+              return;
+            }
+          } catch (error) {
+            console.warn('No se pudo leer la URL compartida:', error);
+          }
+        }
+
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed.entries)) {
+              state.entries = parsed.entries;
+            }
+          } catch (error) {
+            console.warn('No se pudo leer el almacenamiento local:', error);
+          }
+        }
+      }
+
+      function saveState() {
+        const payload = { entries: state.entries };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+
+        const encoded = encodeData(payload);
+        const newUrl = `${window.location.pathname}${window.location.search}#data=${encoded}`;
+        window.history.replaceState({}, '', newUrl);
+        shareLink.value = window.location.href;
+      }
+
+      function updateSummary() {
+        const income = state.entries
+          .filter((entry) => entry.type === 'income')
+          .reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+
+        const expense = state.entries
+          .filter((entry) => entry.type === 'expense')
+          .reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+
+        const balance = income - expense;
+
+        incomeTotal.textContent = formatCurrency(income);
+        expenseTotal.textContent = formatCurrency(expense);
+        balanceTotal.textContent = formatCurrency(balance);
+        balanceTotal.classList.toggle('negative', balance < 0);
+      }
+
+      function renderEntries() {
+        if (!state.entries.length) {
+          entriesList.innerHTML = '<li class="empty">Todavía no hay registros guardados.</li>';
+          return;
+        }
+
+        entriesList.innerHTML = '';
+
+        state.entries
+          .slice()
+          .reverse()
+          .forEach((entry) => {
+            const item = document.createElement('li');
+            item.innerHTML = `
+              <div class="entry-main">
+                <strong>${entry.description}</strong>
+                <span>${new Date(entry.id).toLocaleString('es-AR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</span>
+              </div>
+              <span class="badge ${entry.type === 'income' ? 'income' : 'expense'}">${entry.type === 'income' ? 'Ingreso' : 'Gasto'}</span>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span class="amount ${entry.type === 'income' ? 'income' : 'expense'}">${formatCurrency(entry.amount)}</span>
+                <button class="delete-btn" type="button" data-id="${entry.id}" aria-label="Eliminar registro">×</button>
+              </div>
+            `;
+            entriesList.appendChild(item);
+          });
+
+        document.querySelectorAll('.delete-btn').forEach((button) => {
+          button.addEventListener('click', () => {
+            const id = Number(button.dataset.id);
+            state.entries = state.entries.filter((entry) => entry.id !== id);
+            saveState();
+            render();
+          });
+        });
+      }
+
+      function render() {
+        updateSummary();
+        renderEntries();
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const description = descriptionInput.value.trim();
+        const type = typeInput.value;
+        const amount = Number(amountInput.value);
+
+        if (!description || !amount || amount <= 0) {
+          alert('Completa el concepto y el monto correctamente.');
+          return;
+        }
+
+        state.entries.push({
+          id: Date.now(),
+          description,
+          type,
+          amount
+        });
+
+        form.reset();
+        typeInput.value = 'income';
+        descriptionInput.focus();
+        saveState();
+        render();
+      });
+
+      copyLinkBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          copyLinkBtn.textContent = '¡Enlace copiado!';
+          setTimeout(() => {
+            copyLinkBtn.textContent = 'Copiar enlace';
+          }, 1200);
+        } catch (error) {
+          shareLink.select();
+          document.execCommand('copy');
+          copyLinkBtn.textContent = '¡Enlace copiado!';
+          setTimeout(() => {
+            copyLinkBtn.textContent = 'Copiar enlace';
+          }, 1200);
+        }
+      });
+
+      clearBtn.addEventListener('click', () => {
+        const confirmDelete = window.confirm('¿Seguro que quieres borrar todos los registros?');
+        if (!confirmDelete) return;
+
+        state.entries = [];
+        localStorage.removeItem(STORAGE_KEY);
+        const cleanUrl = `${window.location.pathname}${window.location.search}`;
+        window.history.replaceState({}, '', cleanUrl);
+        shareLink.value = window.location.href;
+        render();
+      });
+
+      loadState();
+      shareLink.value = window.location.href;
+      render();
+    </script>
+  </body>
+</html>
